@@ -96,13 +96,13 @@ class Issue(models.Model):
         verbose_name=_('Author'),
         to=get_user_model(),
         on_delete=models.CASCADE,
-        related_name="author_user",
+        related_name="author_issue",
     )
     assignee_user_id = models.ForeignKey(
         verbose_name=_('Assignee User'),
         to=get_user_model(),
         on_delete=models.CASCADE,
-        related_name="assignee_user",
+        related_name="assigned_issue",
     )
     time_created = models.DateTimeField(
         _('Created time'),

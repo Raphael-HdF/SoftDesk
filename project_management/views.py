@@ -1,11 +1,22 @@
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Project, Contributor, Issue, Comment
 from .serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, \
     CommentSerializer
 
+class HelloView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        content = {'message': f'Hello, {request.user} !'}
+        return Response(content)
+
 
 class ProjectViewset(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
     serializer_class = ProjectSerializer
 
     def get_queryset(self):

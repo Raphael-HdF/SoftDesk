@@ -7,7 +7,7 @@ class User(AbstractUser, PermissionsMixin):
     email = models.EmailField(_('Email address'), unique=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return self.first_name + " " + self.last_name
