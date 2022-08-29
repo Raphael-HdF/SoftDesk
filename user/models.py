@@ -10,4 +10,8 @@ class User(AbstractUser, PermissionsMixin):
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        if self.first_name and self.last_name:
+            return self.first_name + " " + self.last_name
+        elif self.username:
+            return self.username
+        return self.email

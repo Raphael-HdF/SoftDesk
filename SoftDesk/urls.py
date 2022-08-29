@@ -17,26 +17,34 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
 from rest_framework import routers
+from rest_framework_nested import routers
 
-from project_management import views
 from project_management.views import ProjectViewset, ContributorViewset, IssueViewset, \
-    CommentViewset
+    CommentViewset, ProjectUsersViewset
 
 router = routers.SimpleRouter()
-router.register('project', ProjectViewset, basename='project')
-router.register('contributor', ContributorViewset, basename='contributor')
-router.register('issue', IssueViewset, basename='issue')
-router.register('comment', CommentViewset, basename='comment')
+router.register('projects', ProjectViewset, basename='projects')
+router.register('contributors', ContributorViewset, basename='contributors')
+router.register('issues', IssueViewset, basename='issues')
+router.register('comments', CommentViewset, basename='comments')
+# router.register(r'projects/(?P<project_id>[^/.]+)/users',
+#                 ProjectUsersViewset,
+#                 basename='projects-users')
 
+domains_router = routers.NestedSimpleRouter(router, 'projects', lookup='project')
+domains_router.register('users', ProjectUsersViewset, basename='projects-users')
+
+url_api = 'api-v1/'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
-    path('api/user/', include('user.urls', namespace='user')),
-    path('api/token/', jwt_views.TokenObtainPairView.as_view(),
-         name='token_obtain_pair'),
-    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(),
-         name='token_refresh'),
-    path('hello/', views.HelloView.as_view(), name='hello'),
 
+    path(url_api, include(router.urls)),
+    path(url_api, include(domains_router.urls)),
+
+    path(url_api, include('user.urls', namespace='user')),
+    path(url_api + 'login/', jwt_views.TokenObtainPairView.as_view(),
+         name='token_obtain_pair'),
+    path(url_api + 'login/refresh/', jwt_views.TokenRefreshView.as_view(),
+         name='token_refresh'),
 ]

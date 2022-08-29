@@ -1,18 +1,32 @@
 from rest_framework.serializers import ModelSerializer
 
+from SoftDesk.custom_serializers import DynamicFieldsModelSerializer
 from project_management.models import Project, Contributor, Issue, Comment
 
 
-class ProjectSerializer(ModelSerializer):
+class ContributorListSerializer(DynamicFieldsModelSerializer):
     class Meta:
-        model = Project
-        fields = ('id', 'title', 'description', 'type', 'time_created', 'time_updated')
+        model = Contributor
+        fields = ('user_id', 'project_id', 'permission', 'role',)
 
 
-class ContributorSerializer(ModelSerializer):
+class ContributorDetailsSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Contributor
         fields = ('id', 'user_id', 'project_id', 'permission', 'role',)
+
+
+class ProjectSerializer(ModelSerializer):
+    contributors = ContributorListSerializer(
+        many=True,
+        required=False,
+        fields=['user', 'permission', 'role']
+    )
+
+    class Meta:
+        model = Project
+        fields = ('id', 'title', 'description', 'type', 'contributors',
+                  'time_created', 'time_updated')
 
 
 class IssueSerializer(ModelSerializer):

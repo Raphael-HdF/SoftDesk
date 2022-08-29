@@ -31,15 +31,17 @@ class Project(models.Model):
 
 
 class Contributor(models.Model):
-    user_id = models.ForeignKey(
+    user = models.ForeignKey(
         verbose_name=_('User'),
         to=get_user_model(),
         on_delete=models.CASCADE,
+        related_name='contributions',
     )
-    project_id = models.ForeignKey(
+    project = models.ForeignKey(
         verbose_name=_('Project'),
         to=Project,
         on_delete=models.CASCADE,
+        related_name='contributors',
     )
     permission = models.CharField(
         verbose_name=_('Permission'),
@@ -54,7 +56,7 @@ class Contributor(models.Model):
     )
 
     def __str__(self):
-        return self.user_id + " - " + self.project_id
+        return self.project.title + " : " + self.user.username
 
 
 class Issue(models.Model):
@@ -77,10 +79,11 @@ class Issue(models.Model):
         choices=[(0, '0'), (1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')],
         default=0
     )
-    project_id = models.ForeignKey(
+    project = models.ForeignKey(
         verbose_name=_('Project'),
         to=Project,
         on_delete=models.CASCADE,
+        related_name='issues',
     )
     status = models.CharField(
         verbose_name=_('Status'),
@@ -92,13 +95,13 @@ class Issue(models.Model):
         default='reader',
         max_length=255,
     )
-    author_user_id = models.ForeignKey(
+    author_user = models.ForeignKey(
         verbose_name=_('Author'),
         to=get_user_model(),
         on_delete=models.CASCADE,
         related_name="author_issue",
     )
-    assignee_user_id = models.ForeignKey(
+    assignee_user = models.ForeignKey(
         verbose_name=_('Assignee User'),
         to=get_user_model(),
         on_delete=models.CASCADE,
@@ -114,19 +117,21 @@ class Issue(models.Model):
     )
 
     def __str__(self):
-        return self.project_id + " : " + self.title
+        return self.project + " : " + self.title
 
 
 class Comment(models.Model):
-    author_user_id = models.ForeignKey(
+    author_user = models.ForeignKey(
         verbose_name=_('Author'),
         to=get_user_model(),
         on_delete=models.CASCADE,
+        related_name='comments',
     )
-    issue_id = models.ForeignKey(
+    issue = models.ForeignKey(
         verbose_name=_('Issue'),
         to=Issue,
         on_delete=models.CASCADE,
+        related_name='comments',
     )
     description = models.TextField(
         _('Description'),
@@ -143,5 +148,5 @@ class Comment(models.Model):
     )
 
     def __str__(self):
-        return self.issue_id + " - " + self.author_user_id
+        return self.issue + " - " + self.author_user
 

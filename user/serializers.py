@@ -3,6 +3,19 @@ from rest_framework.serializers import ModelSerializer
 from .models import User
 
 
+class UserDetailsSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_staff',
+                  'is_active', 'is_superuser', 'date_joined')
+
+
+class UserListSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email',)
+
+
 class RegisterUserSerializer(ModelSerializer):
     class Meta:
         model = User
