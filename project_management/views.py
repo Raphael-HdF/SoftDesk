@@ -1,6 +1,6 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
@@ -12,17 +12,36 @@ from .serializers import ProjectSerializer, ContributorListSerializer, \
     IssueSerializer, \
     CommentSerializer
 
+class IsContributor(permissions.BasePermission):
+    """
+    Object-level permission to only allow owners of an object to edit it.
+    Assumes the model instance has an `owner` attribute.
+    """
+
+    def has_permission(self, request, view):
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        # if request.method in permissions.SAFE_METHODS:
+        #     return True
+
+        # Instance must have an attribute named `owner`.
+        project_id = view.kwargs.get('project_pk')
+        queryset = User.objects.filter(contributions__project_id=project_id)
+        return request.user in queryset
 
 class ProjectUsersViewset(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsContributor,)
     serializer_class = UserListSerializer
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_pk')
         queryset = User.objects.filter(contributions__project_id=project_id)
-        if self.request.user in queryset:
-            return queryset
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        # if self.request.user in queryset:
+        return queryset
+        # return []
+        # return Response([{'error': "You don't have the permission to view this project"}],
+        #                 status=status.HTTP_403_FORBIDDEN)
+        # return
 
 
 class ProjectViewset(ModelViewSet):
