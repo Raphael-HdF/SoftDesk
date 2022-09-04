@@ -1,6 +1,6 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, serializers
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
@@ -12,48 +12,72 @@ from .serializers import ProjectSerializer, ContributorListSerializer, \
     IssueSerializer, \
     CommentSerializer
 
+
 class IsContributor(permissions.BasePermission):
     """
-    Object-level permission to only allow owners of an object to edit it.
-    Assumes the model instance has an `owner` attribute.
+    Object-level permission to only allow contributors to access the projects.
+    If the contributor permission is reader then he only can get the information.
+    If the contributor permission is editor then he can modify the information.
     """
 
     def has_permission(self, request, view):
+        project_id = view.kwargs.get('project_pk') if 'project_pk' in view.kwargs else \
+            view.kwargs.get('pk')
+        queryset = Contributor.objects.filter(project=project_id, user=request.user)
+        if queryset.filter(permission="editor"):
+            return True
         # Read permissions are allowed to any request,
         # so we'll always allow GET, HEAD or OPTIONS requests.
-        # if request.method in permissions.SAFE_METHODS:
-        #     return True
+        elif queryset.filter(permission="reader") \
+                and request.method in permissions.SAFE_METHODS:
+            return True
+        return False
 
-        # Instance must have an attribute named `owner`.
-        project_id = view.kwargs.get('project_pk')
-        queryset = User.objects.filter(contributions__project_id=project_id)
-        return request.user in queryset
 
 class ProjectUsersViewset(ModelViewSet):
     permission_classes = (IsContributor,)
-    serializer_class = UserListSerializer
+    serializer_class = ContributorListSerializer
+    user_serializer_class = UserListSerializer
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_pk')
-        queryset = User.objects.filter(contributions__project_id=project_id)
-        # if self.request.user in queryset:
+
+        # if the method is get then display the UserListSerializer and User model
+        if self.action in ['retrieve', 'list']:
+            return User.objects.filter(contributions__project_id=project_id)
+
+        queryset = Contributor.objects.filter(project=project_id)
+        user_id = self.kwargs.get('pk')
+        if user_id:
+            queryset.filter(user_id=user_id)
         return queryset
-        # return []
-        # return Response([{'error': "You don't have the permission to view this project"}],
-        #                 status=status.HTTP_403_FORBIDDEN)
-        # return
+
+    def get_serializer_class(self):
+        if self.action in ['retrieve', 'list']:
+            return self.user_serializer_class
+        return super().get_serializer_class()
+
+    def create(self, request, *args, **kwargs):
+        # request.POST['user_id'] = int(request.POST.get('user_id'))
+        # request.POST['project_id'] = int(
+        #     request.POST.get('project_id', 0)
+        #     or kwargs.get('project_pk', 0)
+        # )
+        return super().create(request, *args, **kwargs)
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+    #     headers = self.get_success_headers(serializer.data)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ProjectViewset(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsContributor,)
     serializer_class = ProjectSerializer
 
     def get_queryset(self):
         queryset = Project.objects.filter(
             contributors__user=self.request.user).distinct()
-        # project_id = self.request.GET.get('project_id')
-        # if project_id:
-        #     queryset = queryset.filter(project_id=project_id)
         return queryset
 
 
