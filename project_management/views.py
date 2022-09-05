@@ -37,39 +37,35 @@ class IsContributor(permissions.BasePermission):
 class ProjectUsersViewset(ModelViewSet):
     permission_classes = (IsContributor,)
     serializer_class = ContributorListSerializer
-    user_serializer_class = UserListSerializer
+    details_serializer_class = ContributorDetailsSerializer
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_pk')
 
-        # if the method is get then display the UserListSerializer and User model
-        if self.action in ['retrieve', 'list']:
-            return User.objects.filter(contributions__project_id=project_id)
-
         queryset = Contributor.objects.filter(project=project_id)
-        user_id = self.kwargs.get('pk')
-        if user_id:
-            queryset.filter(user_id=user_id)
+        # user_id = self.kwargs.get('pk')
+        # if user_id:
+        #     queryset.filter(user_id=user_id)
         return queryset
 
     def get_serializer_class(self):
-        if self.action in ['retrieve', 'list']:
-            return self.user_serializer_class
+        if self.action not in ['retrieve', 'list']:
+            return self.details_serializer_class
         return super().get_serializer_class()
 
     def create(self, request, *args, **kwargs):
-        # request.POST['user_id'] = int(request.POST.get('user_id'))
-        # request.POST['project_id'] = int(
-        #     request.POST.get('project_id', 0)
-        #     or kwargs.get('project_pk', 0)
-        # )
+        try:
+            request.data['project'] = int(kwargs.get('project_pk', 0))
+        except Exception as e:
+            raise serializers.ValidationError(e, "Incorrect project_id")
         return super().create(request, *args, **kwargs)
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def destroy(self, request, *args, **kwargs):
+        # try:
+        #     request.data['project'] = int(kwargs.get('project_pk', 0))
+        # except Exception as e:
+        #     raise serializers.ValidationError(e, "Incorrect project_id")
+        return super().destroy(request, *args, **kwargs)
 
 class ProjectViewset(ModelViewSet):
     permission_classes = (IsContributor,)
