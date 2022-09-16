@@ -13,34 +13,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
-from rest_framework import routers
-from rest_framework_nested import routers
+from project_management.router import router, projects_router
 
-from project_management.views import ProjectViewset, ContributorViewset, IssueViewset, \
-    CommentViewset, ProjectUsersViewset
-
-router = routers.SimpleRouter()
-router.register('projects', ProjectViewset, basename='projects')
-router.register('contributors', ContributorViewset, basename='contributors')
-router.register('issues', IssueViewset, basename='issues')
-router.register('comments', CommentViewset, basename='comments')
-# router.register(r'projects/(?P<project_id>[^/.]+)/users',
-#                 ProjectUsersViewset,
-#                 basename='projects-users')
-
-domains_router = routers.NestedSimpleRouter(router, 'projects', lookup='project')
-domains_router.register('users', ProjectUsersViewset, basename='projects-users')
-
-url_api = 'api-v1/'
+url_api = r'api-v1/'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path(url_api, include(router.urls)),
-    path(url_api, include(domains_router.urls)),
+    path(url_api, include(projects_router.urls)),
 
     path(url_api, include('user.urls', namespace='user')),
     path(url_api + 'login/', jwt_views.TokenObtainPairView.as_view(),

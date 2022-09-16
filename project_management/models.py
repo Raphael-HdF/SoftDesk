@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
@@ -57,6 +58,12 @@ class Contributor(models.Model):
 
     def __str__(self):
         return self.project.title + " : " + self.user.username
+
+    class Meta:
+        constraints = [UniqueConstraint(
+            fields=['user', 'project'],
+            name='user_unique_by_project'
+        )]
 
 
 class Issue(models.Model):
@@ -117,7 +124,7 @@ class Issue(models.Model):
     )
 
     def __str__(self):
-        return self.project + " : " + self.title
+        return self.project.title + " : " + self.title
 
 
 class Comment(models.Model):
@@ -149,4 +156,3 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.issue + " - " + self.author_user
-
