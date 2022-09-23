@@ -17,17 +17,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
-from project_management.router import router, projects_router
+from project_management.router import base_router, projects_router
+from user.router import users_router
 
 url_api = r'api-v1/'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path(url_api, include(router.urls)),
-    path(url_api, include(projects_router.urls)),
+    # path(url_api, include(base_router.urls)),
+    # path(url_api, include(projects_router.urls)),
+    path(url_api, include(
+        ('project_management.urls', 'project_management'), namespace='api')),
 
-    path(url_api, include('user.urls', namespace='user')),
+    path(url_api, include(('user.urls', 'user'), namespace='admin-users')),
     path(url_api + 'login/', jwt_views.TokenObtainPairView.as_view(),
          name='token_obtain_pair'),
     path(url_api + 'login/refresh/', jwt_views.TokenRefreshView.as_view(),
