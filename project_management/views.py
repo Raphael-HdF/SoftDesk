@@ -7,7 +7,7 @@ from user.serializers import UserListSerializer, UserDetailsSerializer
 from user.models import User
 from .models import Project, Contributor, Issue, Comment
 from .permissions import IsContributor
-from .serializers import ProjectCreateSerializer, ProjectSerializer, IssueSerializer
+from .serializers import ProjectSerializer, ProjectNestedSerializer, IssueSerializer
 
 
 class IssueViewSet(ModelViewSet):
@@ -44,12 +44,14 @@ class ProjectViewSet(ModelViewSet):
     serializer_class = ProjectSerializer
     # permission_classes = [IsContributor]
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ProjectCreateSerializer
-        return self.serializer_class
+    # def get_serializer_class(self):
+    #     if self.request.method == 'POST':
+    #         return ProjectNestedSerializer
+    #     return self.serializer_class
 
     def get_queryset(self):
         if self.request.user.is_superuser:
             return Project.objects.all()
         return Project.objects.filter(contributors__user=self.request.user).distinct()
+
+

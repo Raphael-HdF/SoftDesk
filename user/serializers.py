@@ -19,7 +19,7 @@ class UserListSerializer(ModelSerializer):
 class UserNestedSerializer(NestedHyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email',)
+        fields = ['id', 'username',]
 
 
 class RegisterUserSerializer(ModelSerializer):

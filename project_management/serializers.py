@@ -10,12 +10,17 @@ from SoftDesk.custom_serializers import DynamicFieldsModelSerializer
 from project_management.models import Project, Contributor, Issue, Comment
 
 
-class ProjectSerializer(NestedHyperlinkedModelSerializer):
+class ProjectNestedSerializer(NestedHyperlinkedModelSerializer):
     class Meta:
         model = Project
         fields = ('url', 'id', 'title', 'description', 'type', 'time_created',
-                  'time_updated')
+                  'time_updated', )
 
+
+class ProjectSerializer(ModelSerializer):
+    class Meta:
+        model = Project
+        fields = "__all__"
 
 class IssueSerializer(NestedHyperlinkedModelSerializer):
     parent_lookup_kwargs = {
@@ -27,7 +32,7 @@ class IssueSerializer(NestedHyperlinkedModelSerializer):
         # view_name='user:user-detail',
     )
     project = ProjectSerializer(many=True, read_only=True)
-    # assignee_user = UserNestedSerializer(many=False, read_only=False)
+    assignee_user = UserNestedSerializer(many=False, read_only=False)
 
     class Meta:
         model = Issue
@@ -46,8 +51,3 @@ class IssueSerializer(NestedHyperlinkedModelSerializer):
             raise ValidationError(error_message)
         return assignee_user
 
-
-class ProjectCreateSerializer(ModelSerializer):
-    class Meta:
-        model = Project
-        fields = "__all__"
