@@ -7,7 +7,7 @@ from user.serializers import UserListSerializer, UserDetailsSerializer
 from user.models import User
 from .models import Project, Contributor, Issue, Comment
 from .permissions import IsContributor
-from .serializers import ProjectSerializer, IssueSerializer
+from .serializers import ProjectSerializer, IssueSerializer, CommentSerializer
 
 
 class IssueViewSet(ModelViewSet):
@@ -16,6 +16,19 @@ class IssueViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Issue.objects.filter(project=self.kwargs['project_pk'])
+
+    # def create(self, request, *args, **kwargs):
+    #     return super(IssueViewSet, self).create(request, *args, **kwargs)
+
+
+class CommentViewSet(ModelViewSet):
+    serializer_class = CommentSerializer
+    # permission_classes = [IsContributor]
+
+    def get_queryset(self):
+        return Comment.objects.filter(
+            issue_id=self.kwargs['issue_pk'],
+        )
 
     # def create(self, request, *args, **kwargs):
     #     return super(IssueViewSet, self).create(request, *args, **kwargs)
