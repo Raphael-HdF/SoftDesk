@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer
 from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
 from .models import User
 
@@ -16,10 +16,10 @@ class UserListSerializer(ModelSerializer):
         fields = ('id', 'username', 'email',)
 
 
-class UserNestedSerializer(NestedHyperlinkedModelSerializer):
+class UserNestedSerializer(HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username',]
+        fields = ['id', 'username']
 
 
 class RegisterUserSerializer(ModelSerializer):

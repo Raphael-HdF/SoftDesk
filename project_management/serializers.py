@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.serializers import ModelSerializer, ValidationError, \
     HyperlinkedModelSerializer, StringRelatedField
+from rest_framework.relations import HyperlinkedRelatedField
 from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
 
 from user.models import User
