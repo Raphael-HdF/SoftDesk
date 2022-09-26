@@ -11,51 +11,38 @@ from SoftDesk.custom_serializers import DynamicFieldsModelSerializer
 from project_management.models import Project, Contributor, Issue, Comment
 
 
-class ProjectNestedSerializer(HyperlinkedModelSerializer):
-    # url = HyperlinkedRelatedField(
-    #     view_name="project-detail"
-    # )
-    class Meta:
-        model = Project
-        fields = "__all__"
-        # fields = ('url', 'id', 'title', 'description', 'type', 'time_created',
-        #           'time_updated',)
-
-    # def get_queryset(self):
-
-
 class ProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
 
 
-class IssueSerializer(NestedHyperlinkedModelSerializer):
-    parent_lookup_kwargs = {
-        'project_pk': 'project_id',
-    }
-
-    # author_user = UserNestedSerializer(
-    #     many=False,
-    #     read_only=True,
-    # )
-    project = ProjectNestedSerializer(many=False, read_only=True)
-    author_user = UserListSerializer()
-    assignee_user = UserListSerializer()
-    # assignee_user = UserNestedSerializer(many=False, read_only=True)
-
+class IssueSerializer(ModelSerializer):
     class Meta:
         model = Issue
-        fields = ('url', 'id', 'title', 'description', 'tag', 'priority', 'status',
-                  'author_user', 'assignee_user', 'project')
-        # extra_kwargs = {'author_user': {'write_only': True}}
+        fields = "__all__"
+        read_only_fields = ['project', 'author_user']
+
+    def create(self, validated_data):
+        try:
+            issue = Issue(**validated_data)
+            issue.project_id = self.context["view"].kwargs.get('project_pk')
+            issue.author_user = self.context['request'].user
+            issue.save()
+        except Exception as e:
+            raise ValidationError(e)
+        return issue
 
     def validate_assignee_user(self, assignee_user):
         """
         Checks if the assignee is registered as a project contributor
         """
-        if not Contributor.objects.filter(
-                user=assignee_user, project=self.context['project']).exists():
+        # if not self.context['request'].user.is_superuser:
+        contributor = Contributor.objects.filter(
+                user=assignee_user,
+            project_id=self.context["view"].kwargs.get('project_pk')
+        ).exists()
+        if not contributor:
             error_message = f'The assignee {str(assignee_user)} is not' \
                             f' registered as user in the project.'
             raise ValidationError(error_message)
