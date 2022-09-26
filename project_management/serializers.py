@@ -11,11 +11,17 @@ from SoftDesk.custom_serializers import DynamicFieldsModelSerializer
 from project_management.models import Project, Contributor, Issue, Comment
 
 
-class ProjectNestedSerializer(NestedHyperlinkedModelSerializer):
+class ProjectNestedSerializer(HyperlinkedModelSerializer):
+    # url = HyperlinkedRelatedField(
+    #     view_name="project-detail"
+    # )
     class Meta:
         model = Project
-        fields = ('url', 'id', 'title', 'description', 'type', 'time_created',
-                  'time_updated', )
+        fields = "__all__"
+        # fields = ('url', 'id', 'title', 'description', 'type', 'time_created',
+        #           'time_updated',)
+
+    # def get_queryset(self):
 
 
 class ProjectSerializer(ModelSerializer):
@@ -23,17 +29,20 @@ class ProjectSerializer(ModelSerializer):
         model = Project
         fields = "__all__"
 
+
 class IssueSerializer(NestedHyperlinkedModelSerializer):
     parent_lookup_kwargs = {
         'project_pk': 'project_id',
     }
-    author_user = UserNestedSerializer(
-        many=True,
-        read_only=True,
-        # view_name='user:user-detail',
-    )
-    project = ProjectSerializer(many=True, read_only=True)
-    assignee_user = UserNestedSerializer(many=False, read_only=False)
+
+    # author_user = UserNestedSerializer(
+    #     many=False,
+    #     read_only=True,
+    # )
+    project = ProjectNestedSerializer(many=False, read_only=True)
+    author_user = UserListSerializer()
+    assignee_user = UserListSerializer()
+    # assignee_user = UserNestedSerializer(many=False, read_only=True)
 
     class Meta:
         model = Issue
@@ -51,4 +60,3 @@ class IssueSerializer(NestedHyperlinkedModelSerializer):
                             f' registered as user in the project.'
             raise ValidationError(error_message)
         return assignee_user
-
