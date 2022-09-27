@@ -17,16 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
-# from project_management.router import base_router, projects_router
-# from user.router import users_router
 
 url_api = r'api-v1/'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # path(url_api, include(base_router.urls)),
-    # path(url_api, include(projects_router.urls)),
     path(url_api, include(
         ('project_management.urls', 'project_management'), namespace='api')),
 

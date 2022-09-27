@@ -1,8 +1,9 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, \
+    IsAdminUser
 from .models import Contributor
 
 
-class IsContributor(BasePermission):
+class IsContributor(IsAdminUser):
     """
     Object-level permission to only allow contributors to access the projects.
     If the contributor permission is reader then he only can get the information.
@@ -10,9 +11,10 @@ class IsContributor(BasePermission):
     """
 
     def has_permission(self, request, view):
-        project_id = view.kwargs.get('project_pk') if 'project_pk' in view.kwargs else \
-            view.kwargs.get('pk')
-        queryset = Contributor.objects.filter(project=project_id, user=request.user)
+        if not view.kwargs:
+            return True
+        project_id = view.kwargs.get('project_pk', view.kwargs.get('pk'))
+        queryset = Contributor.objects.filter(project_id=project_id, user=request.user)
         if queryset.filter(permission="editor"):
             return True
         # Read permissions are allowed to any request,
@@ -20,4 +22,4 @@ class IsContributor(BasePermission):
         elif queryset.filter(permission="reader") \
                 and request.method in SAFE_METHODS:
             return True
-        return False
+        return super(IsContributor, self).has_permission(request, view)

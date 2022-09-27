@@ -1,42 +1,42 @@
-from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
-from rest_framework import status, serializers
 from rest_framework.viewsets import ModelViewSet
 
-from user.serializers import UserListSerializer, UserDetailsSerializer
-from user.models import User
 from .models import Project, Contributor, Issue, Comment
 from .permissions import IsContributor
-from .serializers import ProjectSerializer, IssueSerializer, CommentSerializer
+from .serializers import ProjectSerializer, IssueSerializer, CommentSerializer, \
+    ContributorSerializer
 
 
 class IssueViewSet(ModelViewSet):
     serializer_class = IssueSerializer
-    # permission_classes = [IsContributor]
+    permission_classes = [IsContributor]
 
     def get_queryset(self):
         return Issue.objects.filter(project=self.kwargs['project_pk'])
 
-    # def create(self, request, *args, **kwargs):
-    #     return super(IssueViewSet, self).create(request, *args, **kwargs)
-
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    # permission_classes = [IsContributor]
+    permission_classes = [IsContributor]
 
     def get_queryset(self):
         return Comment.objects.filter(
             issue_id=self.kwargs['issue_pk'],
         )
 
-    # def create(self, request, *args, **kwargs):
-    #     return super(IssueViewSet, self).create(request, *args, **kwargs)
+
+class ContributorViewSet(ModelViewSet):
+    serializer_class = ContributorSerializer
+    permission_classes = [IsContributor]
+
+    def get_queryset(self):
+        return Contributor.objects.filter(
+            project=self.kwargs['project_pk']
+        )
 
 
 class ProjectViewSet(ModelViewSet):
     serializer_class = ProjectSerializer
-    # permission_classes = [IsContributor]
+    permission_classes = [IsContributor]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
