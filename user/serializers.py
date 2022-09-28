@@ -1,5 +1,6 @@
-from rest_framework.serializers import ModelSerializer
-
+from rest_framework.relations import HyperlinkedIdentityField
+from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer
+from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
 from .models import User
 
 
@@ -14,6 +15,21 @@ class UserListSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email',)
+
+
+class UserNestedSerializer(HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username',)
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        instance = self.Meta.model(**validated_data)
+        if password is not None:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 
 class RegisterUserSerializer(ModelSerializer):

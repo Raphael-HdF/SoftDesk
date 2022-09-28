@@ -1,2 +1,5 @@
 Django~=4.1
 djangorestframework~=3.13.1
+djangorestframework-simplejwt
+drf-nested-routers
+django-extensions
