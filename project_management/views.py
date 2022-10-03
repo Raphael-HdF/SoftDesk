@@ -1,6 +1,5 @@
-from rest_framework import status
 from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Project, Contributor, Issue, Comment
@@ -11,7 +10,7 @@ from .serializers import ProjectSerializer, IssueSerializer, CommentSerializer, 
 
 class IssueViewSet(ModelViewSet):
     serializer_class = IssueSerializer
-    permission_classes = [IsContributor]
+    permission_classes = [IsAuthenticated, IsContributor]
 
     def get_queryset(self):
         return Issue.objects.filter(project=self.kwargs['project_pk'])
@@ -19,7 +18,7 @@ class IssueViewSet(ModelViewSet):
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [IsContributor]
+    permission_classes = [IsAuthenticated, IsContributor]
 
     def get_queryset(self):
         return Comment.objects.filter(
@@ -29,7 +28,7 @@ class CommentViewSet(ModelViewSet):
 
 class ContributorViewSet(ModelViewSet):
     serializer_class = ContributorSerializer
-    permission_classes = [IsContributor]
+    permission_classes = [IsAuthenticated, IsContributor]
 
     def get_queryset(self):
         contributor = Contributor.objects.filter(
@@ -50,7 +49,7 @@ class ContributorViewSet(ModelViewSet):
 
 class ProjectViewSet(ModelViewSet):
     serializer_class = ProjectSerializer
-    permission_classes = [IsContributor]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if self.request.user.is_superuser:

@@ -1,6 +1,5 @@
-from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializer
-from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
+
 from .models import User
 
 
@@ -35,7 +34,7 @@ class UserNestedSerializer(HyperlinkedModelSerializer):
 class RegisterUserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ('email', 'username', 'password')
+        fields = ('email', 'username', 'password', 'first_name', 'last_name')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):

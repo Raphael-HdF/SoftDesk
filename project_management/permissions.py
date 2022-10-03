@@ -11,15 +11,17 @@ class IsContributor(IsAdminUser):
     """
 
     def has_permission(self, request, view):
-        if not view.kwargs:
-            return True
-        project_id = view.kwargs.get('project_pk', view.kwargs.get('pk'))
+
+        if not request.user.is_authenticated:
+            return False
+
+        project_id = view.kwargs.get('project_pk')
         queryset = Contributor.objects.filter(project_id=project_id, user=request.user)
-        if queryset.filter(permission="editor"):
+        if queryset.filter(permission="editor").exists():
             return True
         # Read permissions are allowed to any request,
         # so we'll always allow GET, HEAD or OPTIONS requests.
-        elif queryset.filter(permission="reader") \
+        elif queryset.filter(permission="reader").exists() \
                 and request.method in SAFE_METHODS:
             return True
         return super(IsContributor, self).has_permission(request, view)
